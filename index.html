@@ -1049,55 +1049,60 @@
       }
       
       // Function to load files from GitHub
-      async function loadFilesFromGitHub() {
-        try {
-          for (const stage of Object.keys(FILE_MANIFEST)) {
-            // Load images
-            for (const imagePath of FILE_MANIFEST[stage].images) {
-              const url = GITHUB_BASE_URL + encodeURI(imagePath);
-              const response = await fetch(url);
-              if (response.ok) {
-                const blob = await response.blob();
-                const fileName = imagePath.split('/').pop();
-                const file = new File([blob], fileName, { type: 'image/jpeg' });
-                files[stage].images.push(file);
-              }
-            }
-            
-            // Load audio files
-            for (const audioPath of FILE_MANIFEST[stage].audio) {
-              const url = GITHUB_BASE_URL + encodeURI(audioPath);
-              const response = await fetch(url);
-              if (response.ok) {
-                const blob = await response.blob();
-                const fileName = audioPath.split('/').pop();
-                const file = new File([blob], fileName, { type: 'audio/wav' });
-                files[stage].audio.push(file);
-              }
-            }
-          }
-          
-          // Hide loading, show main content
-          loadingContainer.classList.add('hidden');
-          mainContent.classList.remove('hidden');
-          
-          // Update all UI elements
-          updateFileLists();
-          updateTabCounts();
-          updateSummary();
-          
-        } catch (error) {
-          console.error('Error loading files:', error);
-          loadingContainer.innerHTML = `
-            <div class="error-message">
-              <h2>Error Loading Files</h2>
-              <p>Failed to load training materials from GitHub.</p>
-              <p>Please check the repository URL and file paths.</p>
-              <p style="font-size: 0.875rem; margin-top: 1rem;">Error: ${error.message}</p>
-            </div>
-          `;
+      // Function to load files from GitHub (fixed version)
+async function loadFilesFromGitHub() {
+  try {
+    for (const stage of Object.keys(FILE_MANIFEST)) {
+      // Load images
+      for (const imagePath of FILE_MANIFEST[stage].images) {
+        const url = GITHUB_BASE_URL + encodeURIComponent(imagePath).replace(/\(/g, '%28').replace(/\)/g, '%29');
+        const response = await fetch(url);
+        if (response.ok) {
+          const blob = await response.blob();
+          const fileName = imagePath.split('/').pop();
+          const file = new File([blob], fileName, { type: 'image/jpeg' });
+          files[stage].images.push(file);
+        } else {
+          console.error('Image failed to load:', url);
         }
       }
+
+      // Load audio files
+      for (const audioPath of FILE_MANIFEST[stage].audio) {
+        const url = GITHUB_BASE_URL + encodeURIComponent(audioPath).replace(/\(/g, '%28').replace(/\)/g, '%29');
+        const response = await fetch(url);
+        if (response.ok) {
+          const blob = await response.blob();
+          const fileName = audioPath.split('/').pop();
+          const file = new File([blob], fileName, { type: 'audio/wav' });
+          files[stage].audio.push(file);
+        } else {
+          console.error('Audio failed to load:', url);
+        }
+      }
+    }
+
+    // Hide loading, show main content
+    loadingContainer.classList.add('hidden');
+    mainContent.classList.remove('hidden');
+
+    // Update all UI elements
+    updateFileLists();
+    updateTabCounts();
+    updateSummary();
+
+  } catch (error) {
+    console.error('Error loading files:', error);
+    loadingContainer.innerHTML = `
+      <div class="error-message">
+        <h2>Error Loading Files</h2>
+        <p>Failed to load training materials from GitHub.</p>
+        <p>Please check the repository URL and file paths.</p>
+        <p style="font-size: 0.875rem; margin-top: 1rem;">Error: ${error.message}</p>
+      </div>
+    `;
+  }
+}
       
       // Update tab counts
       function updateTabCounts() {

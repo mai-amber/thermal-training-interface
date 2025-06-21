@@ -1,0 +1,2205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thermal Training Interface</title>
+  <style>
+    /* Base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background-color: black;
+      padding: 1rem;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem;
+      background-color: black;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      color: white;
+    }
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: white;
+    }
+    h3 {
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #e5e7eb;
+    }
+    h4 {
+      font-size: 1rem;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: #d1d5db;
+    }
+    
+    /* Loading indicator */
+    .loading-container {
+      text-align: center;
+      padding: 2rem;
+      color: white;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 3px solid #374151;
+      border-top-color: #2563eb;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .loading-text {
+      color: #9ca3af;
+      margin-top: 1rem;
+    }
+    .error-message {
+      color: #dc2626;
+      padding: 1rem;
+      background-color: #1f2937;
+      border-radius: 0.5rem;
+      margin-top: 1rem;
+    }
+    
+    /* Stage Tabs */
+    .tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+      background-color: #111827;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+    }
+    .tab {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      text-align: center;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background-color: #111827;
+      color: #d1d5db;
+    }
+    .tab:hover:not(.active) {
+      background-color: #1f2937;
+    }
+    .tab.active {
+      background-color: #2563eb;
+      color: white;
+    }
+    .tab-count {
+      display: inline-block;
+      margin-left: 0.5rem;
+      background-color: #374151;
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+    }
+    
+    /* Main content layout */
+    .content {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    @media (min-width: 768px) {
+      .content {
+        flex-direction: row;
+      }
+    }
+    
+    /* Panels */
+    .panel {
+      flex: 1;
+      background-color: #111827;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(255, 255, 255, 0.1);
+    }
+    .preview-panel {
+      width: 100%;
+    }
+    @media (min-width: 768px) {
+      .preview-panel {
+        width: 24rem;
+      }
+    }
+    
+    /* File lists */
+    .file-list-container {
+      margin-top: 2rem;
+    }
+    .file-list {
+      background-color: #1f2937;
+      border-radius: 0.5rem;
+      padding: 0.5rem;
+      max-height: 10rem;
+      overflow-y: auto;
+      margin-bottom: 1rem;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.25rem;
+    }
+    .file-item:hover {
+      background-color: #374151;
+    }
+    .file-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+      color: #e5e7eb;
+    }
+    .file-actions {
+      display: flex;
+    }
+    .btn-preview {
+      color: #2563eb;
+      margin-right: 0.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-preview:hover {
+      color: #1d4ed8;
+    }
+    
+    /* Preview */
+    .preview-container {
+      text-align: center;
+    }
+    .preview-file-info {
+      margin-bottom: 0.5rem;
+    }
+    .preview-file-name {
+      font-weight: 500;
+      color: white;
+    }
+    .preview-file-size {
+      font-size: 0.875rem;
+      color: #6b7280;
+      margin-left: 0.5rem;
+    }
+    .preview-image {
+      max-width: 100%;
+      max-height: 16rem;
+      margin: 0 auto;
+      border-radius: 0.25rem;
+      border: 1px solid #e5e7eb;
+    }
+    .preview-audio {
+      width: 100%;
+      margin-top: 0.5rem;
+    }
+    .preview-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 12rem;
+      background-color: #1f2937;
+      border-radius: 0.5rem;
+      color: #9ca3af;
+    }
+    
+    /* Summary */
+    .summary {
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background-color: #172554;
+      border-radius: 0.5rem;
+    }
+    .summary-title {
+      font-weight: 500;
+      color: #93c5fd;
+      margin-bottom: 0.5rem;
+    }
+    .summary-list {
+      list-style: none;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+      color: #e5e7eb;
+    }
+    .summary-item:last-child {
+      padding-top: 0.5rem;
+      margin-top: 0.5rem;
+      border-top: 1px solid #2563eb;
+    }
+    .summary-label {
+      font-weight: 500;
+      color: white;
+    }
+    
+    /* Start button */
+    .start-container {
+      margin-top: 1.5rem;
+    }
+    .btn-start {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background-color: #16a34a;
+      color: white;
+      font-weight: 500;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-start:hover:not(:disabled) {
+      background-color: #15803d;
+    }
+    .btn-start:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .start-help-text {
+      font-size: 0.875rem;
+      color: #9ca3af;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
+    
+    /* Presentation mode */
+    .presentation-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: black;
+      display: flex;
+      z-index: 50;
+    }
+    
+    /* Navigation buttons now in right side */
+    .presentation-nav-buttons {
+      display: flex;
+      gap: 0.5rem;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+    }
+    
+    /* Slide info (title and counter) moved to top of right panel */
+    .slide-info {
+      position: absolute;
+      top: 1rem;
+      left: 1rem;
+      z-index: 10;
+    }
+    
+    .presentation-title {
+      font-weight: 700;
+      margin-right: 0.5rem;
+      color: #1f2937;
+    }
+    
+    #slideCounter {
+      color: #4b5563;
+      font-size: 0.9rem;
+    }
+    
+    .btn-nav {
+      padding: 0.5rem 1rem;
+      border-radius: 0.25rem;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-prev {
+      background-color: #4b5563;
+      color: white;
+    }
+    .btn-prev:hover:not(:disabled) {
+      background-color: #374151;
+    }
+    .btn-prev:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .btn-next {
+      background-color: #2563eb;
+      color: white;
+    }
+    .btn-next:hover {
+      background-color: #1d4ed8;
+    }
+    .btn-exit {
+      background-color: #dc2626;
+      color: white;
+    }
+    .btn-exit:hover {
+      background-color: #b91c1c;
+    }
+    .btn-restart {
+      background-color: #f59e0b;
+      color: white;
+    }
+    .btn-restart:hover {
+      background-color: #d97706;
+    }
+    
+    /* Presentation content */
+    .presentation-content {
+      display: flex;
+      width: 100%;
+      overflow: hidden;
+      background-color: #f9fafb;
+    }
+    
+    /* Left-side container for media */
+    .presentation-media {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      background-color: #0f172a;
+      position: relative;
+    }
+    
+    /* Right-side container for questions */
+    .presentation-questions {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      background-color: #fff;
+      overflow-y: auto;
+      box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+    
+    .slide-container {
+      width: 100%;
+      max-width: 1200px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .slide-title {
+      color: #1f2937;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    
+    .slide-subtitle {
+      color: #4b5563;
+      font-size: 1.25rem;
+      margin-bottom: 1.5rem;
+      text-align: left;
+    }
+    
+    .slide-image {
+      width: 100%;
+      max-height: 70vh;
+      object-fit: contain;
+      margin-bottom: 2rem;
+      display: block;
+      border-radius: 0.5rem;
+    }
+    
+    .slide-audio {
+      width: 100%;
+      margin-bottom: 2rem;
+    }
+    
+    /* Option buttons */
+    .options-container {
+      width: 100%;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+    
+    .option-button {
+      width: 100%;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border-radius: 2rem;
+      text-align: left;
+      background-color: white;
+      color: #1f2937;
+      border: none;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: 500;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: all 0.2s;
+      overflow: hidden;
+    }
+    
+    .option-button:hover:not(:disabled) {
+      background-color: #dbeafe;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .option-button:disabled {
+      cursor: not-allowed;
+    }
+    
+    .option-correct {
+      background-color: #16a34a;
+      color: white;
+    }
+    
+    .option-incorrect {
+      background-color: #dc2626;
+      color: white;
+    }
+    
+    /* Navigation buttons container */
+    .navigation-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      width: 100%;
+    }
+    
+    /* Previous button styling */
+    .btn-prev-alt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      background-color: white;
+      color: #1f2937;
+      border: 1px solid #d1d5db;
+      border-radius: 2rem;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+    }
+    
+    .btn-prev-alt:hover:not(:disabled) {
+      background-color: #f3f4f6;
+    }
+    
+    .btn-prev-alt:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-prev-alt svg {
+      margin-right: 0.5rem;
+    }
+    
+    /* Next button styling */
+    .btn-next-alt {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 1.5rem;
+      background-color: #1f2937;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .btn-next-alt:hover:not(:disabled) {
+      background-color: #111827;
+    }
+    
+    .btn-next-alt:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    .btn-next-alt svg {
+      margin-left: 0.5rem;
+    }
+    
+    /* Results */
+    .result-message {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      text-align: center;
+      color: white;
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
+      width: 80%;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+    
+    .result-correct {
+      background-color: rgba(22, 163, 74, 0.9);
+    }
+    
+    .result-incorrect {
+      background-color: rgba(220, 38, 38, 0.9);
+    }
+    
+    .test-results {
+      max-width: 90%;
+      width: 100%;
+      background-color: white;
+      border-radius: 0.5rem;
+      padding: 2rem;
+      color: #1f2937;
+      margin: 0 auto;
+    }
+    
+    .results-title {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+    
+    .results-score {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    
+    .score-number {
+      font-size: 3rem;
+      font-weight: 700;
+      color: #1d4ed8;
+      margin-bottom: 0.5rem;
+    }
+    
+    .score-percent {
+      font-size: 1.5rem;
+    }
+    
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    
+    .result-item {
+      padding: 1.5rem;
+      border-radius: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+    }
+    
+    .result-item-correct {
+      border: 1px solid #bbf7d0;
+      background-color: #f0fdf4;
+    }
+    
+    .result-item-incorrect {
+      border: 1px solid #fecaca;
+      background-color: #fef2f2;
+    }
+    
+    .result-question {
+      font-weight: 500;
+    }
+    
+    .result-status {
+      font-weight: 500;
+    }
+    
+    .result-status-correct {
+      color: #16a34a;
+    }
+    
+    .result-status-incorrect {
+      color: #dc2626;
+    }
+    
+    /* Match indicator */
+    .match-indicator {
+      display: inline-block;
+      color: #4ade80;
+      margin-left: 4px;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .presentation-content {
+        flex-direction: column;
+      }
+      
+      .presentation-media, 
+      .presentation-questions {
+        width: 100%;
+      }
+      
+      .slide-image {
+        max-height: 40vh;
+      }
+      
+      .option-button {
+        padding: 1rem;
+        font-size: 1rem;
+      }
+      
+      .presentation-nav-buttons {
+        position: static;
+        margin-top: 1rem;
+        justify-content: center;
+      }
+    }
+    
+    /* Hide elements */
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="mainContainer">
+    <h1>Thermal Training Interface</h1>
+    
+    <!-- Loading indicator -->
+    <div id="loadingContainer" class="loading-container">
+      <div class="loading-spinner"></div>
+      <h2>Loading Files...</h2>
+      <p class="loading-text">Please wait while we load the training materials</p>
+    </div>
+    
+    <!-- Main content (hidden initially) -->
+    <div id="mainContent" class="hidden">
+      <!-- Stage tabs -->
+      <div class="tabs" id="stageTabs">
+        <button class="tab active" data-stage="Introductions">
+          Introductions <span class="tab-count">0</span>
+        </button>
+        <button class="tab" data-stage="Training">
+          Training <span class="tab-count">0</span>
+        </button>
+        <button class="tab" data-stage="Test">
+          Test <span class="tab-count">0</span>
+        </button>
+      </div>
+      
+      <div class="content">
+        <!-- File info panel -->
+        <div class="panel">
+          <h2 id="stageTitle">Introductions Stage</h2>
+          
+          <p style="color: #9ca3af; margin-bottom: 1rem;">
+            Files are automatically loaded from the repository. No upload needed!
+          </p>
+          
+          <!-- File lists -->
+          <div class="file-list-container">
+            <h3>Loaded Files</h3>
+            
+            <div id="imageListContainer" class="hidden">
+              <h4>Images (<span id="imageCount">0</span>)</h4>
+              <ul class="file-list" id="imageFileList"></ul>
+            </div>
+            
+            <div id="audioListContainer" class="hidden">
+              <h4>Audio (<span id="audioCount">0</span>)</h4>
+              <ul class="file-list" id="audioFileList"></ul>
+            </div>
+            
+            <p id="noFilesMessage" class="preview-placeholder">
+              Loading files for this stage...
+            </p>
+          </div>
+          
+          <!-- Start button -->
+          <div class="start-container">
+            <button id="btnStart" class="btn-start" disabled>
+              Start Introductions
+            </button>
+            
+            <p id="startHelpText" class="start-help-text">
+              Loading files...
+            </p>
+          </div>
+        </div>
+        
+        <!-- Preview panel -->
+        <div class="panel preview-panel">
+          <h2>Preview</h2>
+          
+          <div id="previewPlaceholder" class="preview-placeholder">
+            Select a file to preview
+          </div>
+          
+          <div id="previewContainer" class="preview-container hidden">
+            <div class="preview-file-info">
+              <span class="preview-file-name" id="previewFileName"></span>
+              <span class="preview-file-size" id="previewFileSize"></span>
+            </div>
+            
+            <img id="previewImage" class="preview-image hidden" alt="Preview">
+            <audio id="previewAudio" class="preview-audio hidden" controls></audio>
+          </div>
+          
+          <div class="summary">
+            <h3 class="summary-title">Summary</h3>
+            <ul class="summary-list">
+              <li class="summary-item">
+                <span>Introductions:</span>
+                <span id="introductionsCount">0 Images, 0 Audio</span>
+              </li>
+              <li class="summary-item">
+                <span>Training:</span>
+                <span id="trainingCount">0 Images, 0 Audio</span>
+              </li>
+              <li class="summary-item">
+                <span>Test:</span>
+                <span id="testCount">0 Images, 0 Audio</span>
+              </li>
+              <li class="summary-item">
+                <span class="summary-label">Total:</span>
+                <span class="summary-label" id="totalCount">0 Files</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Presentation mode container -->
+  <div id="presentationContainer" class="presentation-container hidden">
+    <!-- Content area -->
+    <div class="presentation-content">
+      <!-- Left side - Media (image & audio) -->
+      <div class="presentation-media">
+        <!-- Introductions slide content -->
+        <div id="introductionsSlide" class="slide-container hidden">
+          <h2 id="introductionsTitle" class="slide-title" style="color: white;"></h2>
+          <img id="introductionsImage" class="slide-image" alt="">
+          <audio id="introductionsAudio" class="slide-audio" controls></audio>
+        </div>
+        
+        <!-- Question slide image and audio -->
+        <div id="questionMedia" class="slide-container">
+          <img id="questionImage" class="slide-image" alt="Thermal image">
+          <audio id="questionAudio" class="slide-audio" controls></audio>
+        </div>
+      </div>
+      
+      <!-- Right side - Questions & Results -->
+      <div class="presentation-questions">
+        <!-- Slide info and navigation buttons -->
+        <div class="slide-info">
+          <span class="presentation-title" id="presentationStage">Introductions Stage:</span>
+          <span id="slideCounter">Slide 1 of 1</span>
+        </div>
+        
+        <div class="presentation-nav-buttons">
+          <button id="btnRestart" class="btn-nav btn-restart">Restart</button>
+          <button id="btnExit" class="btn-nav btn-exit">Return to Menu</button>
+        </div>
+        
+        <!-- Question slide content -->
+        <div id="questionSlide" class="slide-container hidden">
+          <h2 class="slide-title">Choose the answer that best describes the thermal scene of the image.</h2>
+          <h3 id="questionCounter" class="slide-subtitle">Question 1 of 1</h3>
+          <div id="optionsContainer" class="options-container"></div>
+          <div id="resultMessage" class="result-message hidden"></div>
+          
+          <!-- Navigation buttons -->
+          <div class="navigation-buttons">
+            <button class="btn-prev-alt" id="btnPrev">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Previous
+            </button>
+            <button class="btn-next-alt" id="btnNext">
+              Next
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Test results -->
+        <div id="testResults" class="test-results hidden">
+          <h2 class="results-title">Test Results</h2>
+          <div class="results-score">
+            <div id="scoreNumber" class="score-number">0 / 0</div>
+            <div id="scorePercent" class="score-percent">0% Correct</div>
+          </div>
+          <div id="resultsList" class="results-list"></div>
+          
+          <!-- Navigation buttons at bottom of results -->
+          <div class="navigation-buttons" style="margin-top: 2rem;">
+            <button class="btn-prev-alt" id="resultsPrevBtn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+              </svg>
+              Previous
+            </button>
+            <button class="btn-next-alt" id="resultsNextBtn">
+              Finish
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // IMPORTANT: Update this base URL to match your GitHub repository
+      // Format: https://raw.githubusercontent.com/[username]/[repository]/[branch]/
+      const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPOSITORY/main/';
+      
+      // Define the file manifest
+      const FILE_MANIFEST = {
+        'Introductions': {
+          images: [
+            '1 - Explanations/blue crossed line 1.jpg',
+            '1 - Explanations/green crossed line 2.jpg',
+            '1 - Explanations/blue square 3.jpg',
+            '1 - Explanations/green square 4.jpg',
+            '1 - Explanations/ice tray 5.jpg',
+            '1 - Explanations/kettle 6.jpg',
+            '1 - Explanations/beer bottles 7.jpg',
+            '1 - Explanations/cups hot liquid 8.jpg',
+            '1 - Explanations/refrigerator oven microwave 9.jpg'
+          ],
+          audio: [
+            '1 - Explanations/blue crossed line 1.wav',
+            '1 - Explanations/green crossed line 2.wav',
+            '1 - Explanations/blue square 3.wav',
+            '1 - Explanations/green square 4.wav',
+            '1 - Explanations/ice tray 5.wav',
+            '1 - Explanations/kettle 6.wav',
+            '1 - Explanations/beer bottles 7.wav',
+            '1 - Explanations/cups hot liquid 8.wav',
+            '1 - Explanations/refrigerator oven microwave 9.wav'
+          ]
+        },
+        'Training': {
+          images: [
+            '2 - Training/stove 1.jpg',
+            '2 - Training/stove 2.jpg',
+            '2 - Training/tablet 3.jpg',
+            '2 - Training/charger 4.jpg',
+            '2 - Training/cup 5.jpg',
+            '2 - Training/dark 6.jpg',
+            '2 - Training/cold sink 7.jpg',
+            '2 - Training/pipe 8.jpg',
+            '2 - Training/hot sink 9.jpg',
+            '2 - Training/window 10.jpg'
+          ],
+          audio: [
+            '2 - Training/stove 1.wav',
+            '2 - Training/stove 2.wav',
+            '2 - Training/tablet 3.wav',
+            '2 - Training/charger 4.wav',
+            '2 - Training/cup 5.wav',
+            '2 - Training/dark 6.wav',
+            '2 - Training/cold sink 7.wav',
+            '2 - Training/pipe 8.wav',
+            '2 - Training/hot sink 9.wav',
+            '2 - Training/window 10.wav'
+          ]
+        },
+        'Test': {
+          images: [
+            '3 - Final Test/bag 1.jpg',
+            '3 - Final Test/dark 2.jpg',
+            '3 - Final Test/cups 3.jpg',
+            '3 - Final Test/table 4.jpg',
+            '3 - Final Test/salad 5.jpg',
+            '3 - Final Test/table 6.jpg',
+            '3 - Final Test/cup 7.jpg',
+            '3 - Final Test/sink 8.jpg',
+            '3 - Final Test/coffee machine 9.jpg',
+            '3 - Final Test/cup 10.jpg'
+          ],
+          audio: [
+            '3 - Final Test/bag 1.wav',
+            '3 - Final Test/dark 2.wav',
+            '3 - Final Test/cups 3.wav',
+            '3 - Final Test/table 4.wav',
+            '3 - Final Test/salad 5.wav',
+            '3 - Final Test/table 6.wav',
+            '3 - Final Test/cup 7.wav',
+            '3 - Final Test/sink 8.wav',
+            '3 - Final Test/coffee machine 9.wav',
+            '3 - Final Test/cup 10.wav'
+          ]
+        }
+      };
+      
+      // State variables
+      let activeStage = 'Introductions';
+      let files = {
+        Introductions: { images: [], audio: [] },
+        Training: { images: [], audio: [] },
+        Test: { images: [], audio: [] }
+      };
+      let previewFile = null;
+      let presentationMode = false;
+      let currentSlideIndex = 0;
+      let currentSlides = [];
+      let userAnswers = [];
+      let testComplete = false;
+      
+      // DOM elements
+      const loadingContainer = document.getElementById('loadingContainer');
+      const mainContent = document.getElementById('mainContent');
+      const stageTabs = document.querySelectorAll('#stageTabs .tab');
+      const stageTitle = document.getElementById('stageTitle');
+      const imageListContainer = document.getElementById('imageListContainer');
+      const audioListContainer = document.getElementById('audioListContainer');
+      const imageFileList = document.getElementById('imageFileList');
+      const audioFileList = document.getElementById('audioFileList');
+      const imageCount = document.getElementById('imageCount');
+      const audioCount = document.getElementById('audioCount');
+      const noFilesMessage = document.getElementById('noFilesMessage');
+      const btnStart = document.getElementById('btnStart');
+      const startHelpText = document.getElementById('startHelpText');
+      const previewPlaceholder = document.getElementById('previewPlaceholder');
+      const previewContainer = document.getElementById('previewContainer');
+      const previewFileName = document.getElementById('previewFileName');
+      const previewFileSize = document.getElementById('previewFileSize');
+      const previewImage = document.getElementById('previewImage');
+      const previewAudio = document.getElementById('previewAudio');
+      const introductionsCount = document.getElementById('introductionsCount');
+      const trainingCount = document.getElementById('trainingCount');
+      const testCount = document.getElementById('testCount');
+      const totalCount = document.getElementById('totalCount');
+      const mainContainer = document.getElementById('mainContainer');
+      const presentationContainer = document.getElementById('presentationContainer');
+      const presentationStage = document.getElementById('presentationStage');
+      const slideCounter = document.getElementById('slideCounter');
+      const btnPrev = document.getElementById('btnPrev');
+      const btnNext = document.getElementById('btnNext');
+      const btnExit = document.getElementById('btnExit');
+      const introductionsSlide = document.getElementById('introductionsSlide');
+      const introductionsTitle = document.getElementById('introductionsTitle');
+      const introductionsImage = document.getElementById('introductionsImage');
+      const introductionsAudio = document.getElementById('introductionsAudio');
+      const questionSlide = document.getElementById('questionSlide');
+      const questionMedia = document.getElementById('questionMedia');
+      const questionCounter = document.getElementById('questionCounter');
+      const questionImage = document.getElementById('questionImage');
+      const questionAudio = document.getElementById('questionAudio');
+      const optionsContainer = document.getElementById('optionsContainer');
+      const resultMessage = document.getElementById('resultMessage');
+      const testResults = document.getElementById('testResults');
+      const scoreNumber = document.getElementById('scoreNumber');
+      const scorePercent = document.getElementById('scorePercent');
+      const resultsList = document.getElementById('resultsList');
+      const resultsPrevBtn = document.getElementById('resultsPrevBtn');
+      const resultsNextBtn = document.getElementById('resultsNextBtn');
+      
+      // Connect the results navigation buttons to the main navigation functions
+      if (resultsPrevBtn) {
+        resultsPrevBtn.addEventListener('click', goToPrevSlide);
+      }
+      if (resultsNextBtn) {
+        resultsNextBtn.addEventListener('click', goToNextSlide);
+      }
+      
+      // Helper function to shuffle arrays
+      function shuffleArray(array) {
+        const newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+      }
+      
+      // Function to load files from GitHub
+      async function loadFilesFromGitHub() {
+        try {
+          for (const stage of Object.keys(FILE_MANIFEST)) {
+            // Load images
+            for (const imagePath of FILE_MANIFEST[stage].images) {
+              const url = GITHUB_BASE_URL + imagePath;
+              const response = await fetch(url);
+              if (response.ok) {
+                const blob = await response.blob();
+                const fileName = imagePath.split('/').pop();
+                const file = new File([blob], fileName, { type: 'image/jpeg' });
+                files[stage].images.push(file);
+              }
+            }
+            
+            // Load audio files
+            for (const audioPath of FILE_MANIFEST[stage].audio) {
+              const url = GITHUB_BASE_URL + audioPath;
+              const response = await fetch(url);
+              if (response.ok) {
+                const blob = await response.blob();
+                const fileName = audioPath.split('/').pop();
+                const file = new File([blob], fileName, { type: 'audio/wav' });
+                files[stage].audio.push(file);
+              }
+            }
+          }
+          
+          // Hide loading, show main content
+          loadingContainer.classList.add('hidden');
+          mainContent.classList.remove('hidden');
+          
+          // Update all UI elements
+          updateFileLists();
+          updateTabCounts();
+          updateSummary();
+          
+        } catch (error) {
+          console.error('Error loading files:', error);
+          loadingContainer.innerHTML = `
+            <div class="error-message">
+              <h2>Error Loading Files</h2>
+              <p>Failed to load training materials from GitHub.</p>
+              <p>Please check the repository URL and file paths.</p>
+              <p style="font-size: 0.875rem; margin-top: 1rem;">Error: ${error.message}</p>
+            </div>
+          `;
+        }
+      }
+      
+      // Update tab counts
+      function updateTabCounts() {
+        const tabCounts = document.querySelectorAll('.tab-count');
+        tabCounts.forEach(count => {
+          const stage = count.parentElement.getAttribute('data-stage');
+          count.textContent = getFileCount(stage);
+        });
+      }
+      
+      // Update summary counts
+      function updateSummary() {
+        introductionsCount.textContent = `${files.Introductions.images.length} Images, ${files.Introductions.audio.length} Audio`;
+        trainingCount.textContent = `${files.Training.images.length} Images, ${files.Training.audio.length} Audio`;
+        testCount.textContent = `${files.Test.images.length} Images, ${files.Test.audio.length} Audio`;
+        totalCount.textContent = `${getTotalFiles()} Files`;
+        
+        updateMatchingSummary();
+      }
+      
+      // Count files
+      function getFileCount(stage) {
+        return files[stage].images.length + files[stage].audio.length;
+      }
+      
+      function getTotalFiles() {
+        return getFileCount('Introductions') + getFileCount('Training') + getFileCount('Test');
+      }
+      
+      // Helper function to count matches in a stage
+      function countMatches(stage) {
+        const imageBaseNames = files[stage].images.map(file => 
+          file.name.replace(/\.[^/.]+$/, "").toLowerCase()
+        );
+        
+        const audioBaseNames = files[stage].audio.map(file => 
+          file.name.replace(/\.[^/.]+$/, "").toLowerCase()
+        );
+        
+        return imageBaseNames.filter(name => audioBaseNames.includes(name)).length;
+      }
+      
+      // Add summary of matches to the UI
+      function updateMatchingSummary() {
+        const summaryList = document.querySelector('.summary-list');
+        if (!summaryList) return;
+        
+        const matchCounts = {
+          Introductions: countMatches('Introductions'),
+          Training: countMatches('Training'),
+          Test: countMatches('Test')
+        };
+        
+        let matchItem = document.getElementById('matchingSummary');
+        if (!matchItem) {
+          matchItem = document.createElement('li');
+          matchItem.id = 'matchingSummary';
+          matchItem.className = 'summary-item';
+          matchItem.style.borderTop = '1px dashed #2563eb';
+          matchItem.style.paddingTop = '0.5rem';
+          matchItem.style.marginTop = '0.5rem';
+          summaryList.appendChild(matchItem);
+        }
+        
+        matchItem.innerHTML = `
+          <span>Matched Pairs:</span>
+          <span>
+            <span style="color: ${matchCounts.Introductions > 0 ? '#4ade80' : '#d1d5db'}">Intro: ${matchCounts.Introductions}</span> | 
+            <span style="color: ${matchCounts.Training > 0 ? '#4ade80' : '#d1d5db'}">Training: ${matchCounts.Training}</span> | 
+            <span style="color: ${matchCounts.Test > 0 ? '#4ade80' : '#d1d5db'}">Test: ${matchCounts.Test}</span>
+          </span>
+        `;
+      }
+      
+      // Update file lists with matching indicators
+      function updateFileLists() {
+        const hasImages = files[activeStage].images.length > 0;
+        const hasAudio = files[activeStage].audio.length > 0;
+        
+        imageListContainer.classList.toggle('hidden', !hasImages);
+        audioListContainer.classList.toggle('hidden', !hasAudio);
+        noFilesMessage.classList.toggle('hidden', hasImages || hasAudio);
+        
+        imageCount.textContent = files[activeStage].images.length;
+        audioCount.textContent = files[activeStage].audio.length;
+        
+        const imageBaseNames = files[activeStage].images.map(file => 
+          file.name.replace(/\.[^/.]+$/, "").toLowerCase()
+        );
+        
+        const audioBaseNames = files[activeStage].audio.map(file => 
+          file.name.replace(/\.[^/.]+$/, "").toLowerCase()
+        );
+        
+        // Update image files list
+        imageFileList.innerHTML = '';
+        files[activeStage].images.forEach((file, index) => {
+          const baseName = file.name.replace(/\.[^/.]+$/, "").toLowerCase();
+          const hasMatch = audioBaseNames.includes(baseName);
+          
+          const li = document.createElement('li');
+          li.className = 'file-item';
+          
+          li.innerHTML = `
+            <span class="file-name">${file.name} ${hasMatch ? '<span class="match-indicator">✓</span>' : ''}</span>
+            <div class="file-actions">
+              <button class="btn-preview">Preview</button>
+            </div>
+          `;
+          
+          li.querySelector('.btn-preview').addEventListener('click', () => {
+            showPreview(activeStage, 'images', index, file);
+          });
+          
+          imageFileList.appendChild(li);
+        });
+        
+        // Update audio files list
+        audioFileList.innerHTML = '';
+        files[activeStage].audio.forEach((file, index) => {
+          const baseName = file.name.replace(/\.[^/.]+$/, "").toLowerCase();
+          const hasMatch = imageBaseNames.includes(baseName);
+          
+          const li = document.createElement('li');
+          li.className = 'file-item';
+          
+          li.innerHTML = `
+            <span class="file-name">${file.name} ${hasMatch ? '<span class="match-indicator">✓</span>' : ''}</span>
+            <div class="file-actions">
+              <button class="btn-preview">Preview</button>
+            </div>
+          `;
+          
+          li.querySelector('.btn-preview').addEventListener('click', () => {
+            showPreview(activeStage, 'audio', index, file);
+          });
+          
+          audioFileList.appendChild(li);
+        });
+        
+        // Update start button state
+        const canStart = files[activeStage].images.length > 0 && files[activeStage].audio.length > 0;
+        btnStart.disabled = !canStart;
+        
+        if (canStart) {
+          const matchedCount = imageBaseNames.filter(name => audioBaseNames.includes(name)).length;
+          startHelpText.textContent = `Ready to start the ${activeStage.toLowerCase()} stage (${matchedCount} matched files)`;
+        } else {
+          startHelpText.textContent = 'Files are loading...';
+        }
+      }
+      
+      // Switch active stage
+      function setActiveStage(stage) {
+        activeStage = stage;
+        
+        stageTabs.forEach(tab => {
+          tab.classList.toggle('active', tab.getAttribute('data-stage') === stage);
+        });
+        
+        stageTitle.textContent = `${stage} Stage`;
+        btnStart.textContent = `Start ${stage}`;
+        
+        updateFileLists();
+      }
+      
+      function showPreview(stage, type, index, file) {
+        setPreviewFile({
+          stage,
+          type,
+          index,
+          file,
+          url: URL.createObjectURL(file)
+        });
+      }
+      
+      function setPreviewFile(file) {
+        previewFile = file;
+        
+        if (file) {
+          previewPlaceholder.classList.add('hidden');
+          previewContainer.classList.remove('hidden');
+          
+          previewFileName.textContent = file.file.name;
+          previewFileSize.textContent = `(${Math.round(file.file.size / 1024)} KB)`;
+          
+          if (file.type === 'images') {
+            previewImage.src = file.url;
+            previewImage.classList.remove('hidden');
+            previewAudio.classList.add('hidden');
+          } else {
+            previewAudio.src = file.url;
+            previewAudio.classList.remove('hidden');
+            previewImage.classList.add('hidden');
+          }
+        } else {
+          previewPlaceholder.classList.remove('hidden');
+          previewContainer.classList.add('hidden');
+        }
+      }
+      
+      // Prepare slides (includes all the question logic from original)
+      function prepareSlides(stage) {
+        // Match files by name
+        let matchedPairs = [];
+        
+        const imageInfo = files[stage].images.map(file => {
+          return {
+            file: file,
+            baseName: file.name.replace(/\.[^/.]+$/, "").toLowerCase(),
+            fullName: file.name.toLowerCase()
+          };
+        });
+        
+        const audioInfo = files[stage].audio.map(file => {
+          return {
+            file: file,
+            baseName: file.name.replace(/\.[^/.]+$/, "").toLowerCase(),
+            fullName: file.name.toLowerCase()
+          };
+        });
+        
+        // First try direct name matching
+        imageInfo.forEach(imgInfo => {
+          const matchingAudio = audioInfo.find(audioInfo => audioInfo.baseName === imgInfo.baseName);
+          
+          if (matchingAudio) {
+            matchedPairs.push({
+              image: imgInfo.file,
+              audio: matchingAudio.file,
+              name: imgInfo.baseName,
+              fullName: imgInfo.fullName,
+              matched: "exact"
+            });
+          }
+        });
+        
+        // For any unmatched files, fall back to numerical order matching
+        const matchedImageBaseNames = matchedPairs.map(m => m.name);
+        const remainingImages = imageInfo.filter(info => !matchedImageBaseNames.includes(info.baseName));
+        
+        const matchedAudioBaseNames = matchedPairs.map(m => m.name);
+        const remainingAudio = audioInfo.filter(info => !matchedAudioBaseNames.includes(info.baseName));
+        
+        remainingImages.sort((a, b) => a.baseName.localeCompare(b.baseName));
+        remainingAudio.sort((a, b) => a.baseName.localeCompare(b.baseName));
+        
+        const minRemaining = Math.min(remainingImages.length, remainingAudio.length);
+        for (let i = 0; i < minRemaining; i++) {
+          matchedPairs.push({
+            image: remainingImages[i].file,
+            audio: remainingAudio[i].file,
+            name: remainingImages[i].baseName,
+            fullName: remainingImages[i].fullName,
+            matched: "sequential"
+          });
+        }
+        
+        matchedPairs.sort((a, b) => a.name.localeCompare(b.name));
+        
+        const minCount = matchedPairs.length;
+        const slides = [];
+        
+        if (stage === 'Test') {
+          // Test questions
+          const testQuestions = [
+            {
+              questionNumber: 1,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The bag on the RIGHT has COLD items in it", isCorrect: true },
+                { text: "The bag on the LEFT has HOT items in it", isCorrect: false },
+                { text: "The bag on the LEFT has a COLD item in it", isCorrect: false },
+                { text: "The bag on the RIGHT has a HOT item in it", isCorrect: false }
+              ],
+              keywords: ["bag", "bags", "cold", "white", "pink", "bench"]
+            },
+            {
+              questionNumber: 2,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "There is a HOT item on the LEFT of this dark scene", isCorrect: true },
+                { text: "There is a HOT item on the RIGHT of this dark scene", isCorrect: false },
+                { text: "There is a COLD item on the RIGHT of this dark scene", isCorrect: false },
+                { text: "There is a COLD item on the LEFT of this dark scene", isCorrect: false }
+              ],
+              keywords: ["dark", "night", "window", "light"]
+            },
+            {
+              questionNumber: 3,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The cup in the MIDDLE is HOT and the cup on the RIGHT is COLD", isCorrect: true },
+                { text: "The cup in the MIDDLE is HOT and the cup on the LEFT is COLD", isCorrect: false },
+                { text: "The cup in the MIDDLE is COLD and the cup on the RIGHT is HOT", isCorrect: false },
+                { text: "The cup in the MIDDLE is COLD and the cup on the LEFT is HOT", isCorrect: false }
+              ],
+              keywords: ["cups", "coffee", "three", "row"]
+            },
+            {
+              questionNumber: 4,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "There were two HOT cups in the MIDDLE and RIGHT of the table", isCorrect: true },
+                { text: "There were two HOT cups in the MIDDLE and LEFT of the table", isCorrect: false },
+                { text: "There were two COLD cups in the MIDDLE and RIGHT of the table", isCorrect: false },
+                { text: "There were two COLD cups in the MIDDLE and LEFT of the table", isCorrect: false }
+              ],
+              keywords: ["table", "wooden", "desk", "empty", "cups"]
+            },
+            {
+              questionNumber: 5,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The salad on the LEFT is COLD. The potatoes on the RIGHT are WARM.", isCorrect: true },
+                { text: "The salad on the LEFT is HOT. The potatoes on the RIGHT are COLD.", isCorrect: false },
+                { text: "The salad on the LEFT is COLD. The potatoes on the RIGHT are COLD.", isCorrect: false },
+                { text: "The salad on the LEFT is HOT. The potatoes on the RIGHT are WARM.", isCorrect: false }
+              ],
+              keywords: ["salad", "food", "potatoes", "table", "dinner", "bowl"]
+            },
+            {
+              questionNumber: 6,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "There was a WARM cup in the MIDDLE of the table", isCorrect: true },
+                { text: "There was a COLD cup in the MIDDLE of the table", isCorrect: false },
+                { text: "There was a WARM cup on the RIGHT of the table", isCorrect: false },
+                { text: "There was a COLD cup on the RIGHT of the table", isCorrect: false }
+              ],
+              keywords: ["table", "cup", "glass", "water", "drink"]
+            },
+            {
+              questionNumber: 7,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The cup on the RIGHT has COLD water in it", isCorrect: true },
+                { text: "The cup on the RIGHT has HOT water in it", isCorrect: false },
+                { text: "The cup on the LEFT has COLD water in it", isCorrect: false },
+                { text: "The cup on the LEFT has HOT water in it", isCorrect: false }
+              ],
+              keywords: ["cup", "glass", "water", "two", "table"]
+            },
+            {
+              questionNumber: 8,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The sink is HOT", isCorrect: true },
+                { text: "The sink is COLD", isCorrect: false },
+                { text: "The sink and the faucet are HOT", isCorrect: false },
+                { text: "The sink and the faucet are COLD", isCorrect: false }
+              ],
+              keywords: ["sink", "bathroom", "faucet", "tap", "white"]
+            },
+            {
+              questionNumber: 9,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The water tank is full of COLD water", isCorrect: true },
+                { text: "The water tank is full of WARM water", isCorrect: false },
+                { text: "The water tank has little COLD water in it", isCorrect: false },
+                { text: "The water tank has little WARM water in it", isCorrect: false }
+              ],
+              keywords: ["machine", "coffee", "espresso", "maker", "water", "tank"]
+            },
+            {
+              questionNumber: 10,
+              questionText: "What best describes the thermal environment in this scene?",
+              options: [
+                { text: "The cup on the LEFT is HOT and the cup on the RIGHT is COLD", isCorrect: true },
+                { text: "The cup on the LEFT is COLD and the cup on the RIGHT is HOT", isCorrect: false },
+                { text: "The cup in the middle is HOT and the cup on the RIGHT is COLD", isCorrect: false },
+                { text: "The cup in the middle is COLD and the cup on the LEFT is HOT", isCorrect: false }
+              ],
+              keywords: ["cup", "coffee", "espresso", "black", "multiple"]
+            }
+          ];
+          
+          // Match questions to files
+          for (let i = 0; i < minCount; i++) {
+            const currentPair = matchedPairs[i];
+            let matchedQuestion = null;
+            
+            const pairName = currentPair.name.toLowerCase();
+            const numberMatch = pairName.match(/(\d+)/);
+            
+            if (numberMatch && numberMatch[1]) {
+              const questionIndex = parseInt(numberMatch[1]) - 1;
+              if (questionIndex >= 0 && questionIndex < testQuestions.length) {
+                matchedQuestion = testQuestions[questionIndex];
+              }
+            }
+            
+            if (!matchedQuestion) {
+              let bestMatchScore = 0;
+              let bestMatchIndex = 0;
+              
+              testQuestions.forEach((question, qIndex) => {
+                if (slides.some(slide => slide.questionNumber === question.questionNumber)) {
+                  return;
+                }
+                
+                const matchScore = question.keywords.reduce((score, keyword) => {
+                  return pairName.includes(keyword.toLowerCase()) ? score + 1 : score;
+                }, 0);
+                
+                if (matchScore > bestMatchScore) {
+                  bestMatchScore = matchScore;
+                  bestMatchIndex = qIndex;
+                }
+              });
+              
+              if (bestMatchScore > 0) {
+                matchedQuestion = testQuestions[bestMatchIndex];
+              } else {
+                for (const question of testQuestions) {
+                  if (!slides.some(slide => slide.questionNumber === question.questionNumber)) {
+                    matchedQuestion = question;
+                    break;
+                  }
+                }
+              }
+            }
+            
+            if (matchedQuestion) {
+              const shuffledOptions = shuffleArray(matchedQuestion.options);
+              
+              slides.push({
+                image: currentPair.image,
+                audio: currentPair.audio,
+                name: `EX Question ${matchedQuestion.questionNumber}`,
+                matchedName: currentPair.name,
+                fullName: currentPair.fullName,
+                matched: currentPair.matched,
+                questionNumber: matchedQuestion.questionNumber,
+                questionText: matchedQuestion.questionText,
+                options: shuffledOptions,
+                originalOptions: matchedQuestion.options,
+                answered: false,
+                selectedAnswer: null
+              });
+            }
+          }
+        } 
+        else if (stage === 'Training') {
+          // Training questions
+          const trainingQuestions = [
+            {
+              questionNumber: 1,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The BOTTOM LEFT burner is ON", isCorrect: true },
+                { text: "The CENTER burner is ON", isCorrect: false }
+              ],
+              keywords: ["bottom left burner", "burner", "left", "bottom"]
+            },
+            {
+              questionNumber: 2,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The burner on the BOTTOM LEFT and the MIDDLE are HOT", isCorrect: true },
+                { text: "The burner on the BOTTOM RIGHT and the MIDDLE are HOT", isCorrect: false }
+              ],
+              keywords: ["stove", "burner", "cooktop", "multiple"]
+            },
+            {
+              questionNumber: 3,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The phone on the RIGHT is ON", isCorrect: true },
+                { text: "The tablet on the LEFT is ON", isCorrect: false }
+              ],
+              keywords: ["tablet", "ipad", "device", "electronic", "phone"]
+            },
+            {
+              questionNumber: 4,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The RIGHT charger is HOT", isCorrect: true },
+                { text: "The LEFT charger is HOT", isCorrect: false }
+              ],
+              keywords: ["charger", "plug", "adapter", "outlet", "socket"]
+            },
+            {
+              questionNumber: 5,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The cup and spoon are HOT", isCorrect: true },
+                { text: "The cup is HOT", isCorrect: false }
+              ],
+              keywords: ["cup", "mug", "spoon", "coffee", "tea"]
+            },
+            {
+              questionNumber: 6,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "There is an air conditioner in the dark room emitting COLD air", isCorrect: true },
+                { text: "There is an air conditioner in the dark room emitting HOT air", isCorrect: false }
+              ],
+              keywords: ["dark", "ac", "air", "conditioner", "night"]
+            },
+            {
+              questionNumber: 7,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The water in the faucet is COLD", isCorrect: true },
+                { text: "The water in the faucet is HOT", isCorrect: false }
+              ],
+              keywords: ["faucet", "cold sink", "water", "tap", "cold"]
+            },
+            {
+              questionNumber: 8,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The piping under this sink is HOT", isCorrect: true },
+                { text: "The piping under this sink is COLD", isCorrect: false }
+              ],
+              keywords: ["pipe", "under", "plumbing", "sink", "drain"]
+            },
+            {
+              questionNumber: 9,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The water in the faucet is HOT", isCorrect: true },
+                { text: "The water in the faucet is COLD", isCorrect: false }
+              ],
+              keywords: ["faucet", "hot sink", "water", "tap", "hot"]
+            },
+            {
+              questionNumber: 10,
+              questionText: "Choose the answer that best describes the thermal scene of the image.",
+              options: [
+                { text: "The weather outside the window is COLD", isCorrect: true },
+                { text: "The weather outside the window is HOT", isCorrect: false }
+              ],
+              keywords: ["window", "outside", "weather", "sun", "sky"]
+            }
+          ];
+          
+          // Match questions to files (same logic as Test)
+          for (let i = 0; i < minCount; i++) {
+            const currentPair = matchedPairs[i];
+            let matchedQuestion = null;
+            
+            const pairName = currentPair.name.toLowerCase();
+            const numberMatch = pairName.match(/(\d+)/);
+            
+            if (numberMatch && numberMatch[1]) {
+              const questionIndex = parseInt(numberMatch[1]) - 1;
+              if (questionIndex >= 0 && questionIndex < trainingQuestions.length) {
+                matchedQuestion = trainingQuestions[questionIndex];
+              }
+            }
+            
+            if (!matchedQuestion) {
+              let bestMatchScore = 0;
+              let bestMatchIndex = 0;
+              
+              trainingQuestions.forEach((question, qIndex) => {
+                if (slides.some(slide => slide.questionNumber === question.questionNumber)) {
+                  return;
+                }
+                
+                const matchScore = question.keywords.reduce((score, keyword) => {
+                  return pairName.includes(keyword.toLowerCase()) ? score + 1 : score;
+                }, 0);
+                
+                if (matchScore > bestMatchScore) {
+                  bestMatchScore = matchScore;
+                  bestMatchIndex = qIndex;
+                }
+              });
+              
+              if (bestMatchScore > 0) {
+                matchedQuestion = trainingQuestions[bestMatchIndex];
+              } else {
+                for (const question of trainingQuestions) {
+                  if (!slides.some(slide => slide.questionNumber === question.questionNumber)) {
+                    matchedQuestion = question;
+                    break;
+                  }
+                }
+              }
+            }
+            
+            if (matchedQuestion) {
+              const shuffledOptions = shuffleArray(matchedQuestion.options);
+              
+              slides.push({
+                image: currentPair.image,
+                audio: currentPair.audio,
+                name: `Training Question ${matchedQuestion.questionNumber}`,
+                matchedName: currentPair.name,
+                fullName: currentPair.fullName,
+                matched: currentPair.matched,
+                questionNumber: matchedQuestion.questionNumber,
+                questionText: matchedQuestion.questionText,
+                options: shuffledOptions,
+                originalOptions: matchedQuestion.options,
+                answered: false,
+                selectedAnswer: null
+              });
+            }
+          }
+        } else {
+          // Introductions stage
+          return matchedPairs;
+        }
+        
+        slides.sort((a, b) => a.questionNumber - b.questionNumber);
+        return slides;
+      }
+      
+      // Get matched files for introductions
+      function getMatchedFiles(stage) {
+        const images = files[stage].images;
+        const audio = files[stage].audio;
+        const matched = [];
+        
+        const imageInfo = images.map(file => {
+          return {
+            file: file,
+            baseName: file.name.replace(/\.[^/.]+$/, "").toLowerCase()
+          };
+        });
+        
+        const audioInfo = audio.map(file => {
+          return {
+            file: file,
+            baseName: file.name.replace(/\.[^/.]+$/, "").toLowerCase()
+          };
+        });
+        
+        imageInfo.forEach(imgInfo => {
+          const matchingAudio = audioInfo.find(audioInfo => audioInfo.baseName === imgInfo.baseName);
+          
+          if (matchingAudio) {
+            matched.push({
+              image: imgInfo.file,
+              audio: matchingAudio.file,
+              name: imgInfo.baseName,
+              matched: "exact"
+            });
+          }
+        });
+        
+        const matchedImageBaseNames = matched.map(m => m.name);
+        const remainingImages = imageInfo.filter(info => !matchedImageBaseNames.includes(info.baseName));
+        
+        const matchedAudioBaseNames = matched.map(m => m.name);
+        const remainingAudio = audioInfo.filter(info => !matchedAudioBaseNames.includes(info.baseName));
+        
+        remainingImages.sort((a, b) => a.baseName.localeCompare(b.baseName));
+        remainingAudio.sort((a, b) => a.baseName.localeCompare(b.baseName));
+        
+        const minRemaining = Math.min(remainingImages.length, remainingAudio.length);
+        for (let i = 0; i < minRemaining; i++) {
+          matched.push({
+            image: remainingImages[i].file,
+            audio: remainingAudio[i].file,
+            name: remainingImages[i].baseName,
+            matched: "sequential"
+          });
+        }
+        
+        return matched;
+      }
+      
+      // Render introduction slides
+      function renderIntroductionsSlide() {
+        const currentSlide = currentSlides[currentSlideIndex];
+        
+        presentationContainer.classList.remove('intro-mode');
+        introductionsSlide.classList.add('hidden');
+        
+        questionSlide.classList.remove('hidden');
+        questionMedia.classList.remove('hidden');
+        questionImage.src = URL.createObjectURL(currentSlide.image);
+        questionAudio.src = URL.createObjectURL(currentSlide.audio);
+        
+        const introLabels = [
+          "This is what a very HOT item in the shape of a diagonal line would sound like",
+          "This is what a very COLD item in the shape of a diagonal line would sound like",
+          "This is what a very HOT item in the shape of a square would sound like",
+          "This is what a very COLD item in the shape of a square would sound like",
+          "This is what a very COLD icetray would sound like",
+          "This is what a very HOT kettle would sound like",
+          "This is what three COLD beer bottles would sound like",
+          "This is what two cups of HOT tea would sound like",
+          "This is what (from LEFT to RIGHT) a COLD refrigerator, a HOT oven (BOTTOM) and a HOT microwave (TOP) would sound like"
+        ];
+        
+        let matchedLabelIndex = -1;
+        const fileName = currentSlide.name.toLowerCase();
+        
+        // Match based on the number in filename first
+        if (fileName.includes("0 -")) {
+          matchedLabelIndex = 0;
+        } else if (fileName.includes("1 -") && !fileName.includes("1.5")) {
+          matchedLabelIndex = 1;
+        } else if (fileName.includes("1.5 -")) {
+          matchedLabelIndex = 2;
+        } else if (fileName.includes("2 -")) {
+          matchedLabelIndex = 3;
+        } else if (fileName.includes("3 -")) {
+          matchedLabelIndex = 4;
+        } else if (fileName.includes("4 -")) {
+          matchedLabelIndex = 5;
+        } else if (fileName.includes("5 -")) {
+          matchedLabelIndex = 6;
+        } else if (fileName.includes("6 -")) {
+          matchedLabelIndex = 7;
+        } else if (fileName.includes("7 -")) {
+          matchedLabelIndex = 8;
+        }
+        
+        // Fallback to keyword matching if number not found
+        if (matchedLabelIndex === -1) {
+          if (fileName.includes("white crossed line") && fileName.includes("hot")) {
+            matchedLabelIndex = 0;
+          } else if (fileName.includes("white crossed line") && fileName.includes("cold")) {
+            matchedLabelIndex = 1;
+          } else if (fileName.includes("white square") && fileName.includes("hot")) {
+            matchedLabelIndex = 2;
+          } else if (fileName.includes("white square") && fileName.includes("cold")) {
+            matchedLabelIndex = 3;
+          } else if (fileName.includes("ice tray")) {
+            matchedLabelIndex = 4;
+          } else if (fileName.includes("kettel")) {  // Note: matches your spelling
+            matchedLabelIndex = 5;
+          } else if (fileName.includes("beer") || fileName.includes("bottles")) {
+            matchedLabelIndex = 6;
+          } else if (fileName.includes("hot liquid")) {
+            matchedLabelIndex = 7;
+          } else if (fileName.includes("refrigerator")) {
+            matchedLabelIndex = 8;
+          }
+        }
+        
+        const slideIndex = currentSlideIndex;
+        const labelIndex = matchedLabelIndex !== -1 ? matchedLabelIndex : 
+                          (slideIndex < introLabels.length ? slideIndex : 0);
+        
+        const slideTitle = questionSlide.querySelector('.slide-title');
+        slideTitle.innerHTML = introLabels[labelIndex];
+        
+        optionsContainer.innerHTML = '';
+        resultMessage.classList.add('hidden');
+        questionCounter.style.display = 'none';
+      }
+      
+      // Render question slides
+      function renderQuestionSlide() {
+        const currentSlide = currentSlides[currentSlideIndex];
+        
+        if (activeStage === 'Training') {
+          const slideTitle = questionSlide.querySelector('.slide-title');
+          slideTitle.textContent = `${currentSlide.questionNumber}. ${currentSlide.questionText}`;
+        } else {
+          questionSlide.querySelector('.slide-title').textContent = currentSlide.questionText;
+        }
+        
+        if (activeStage === 'Training') {
+          questionCounter.textContent = '';
+          questionCounter.style.display = 'none';
+        } else {
+          questionCounter.textContent = `Question ${currentSlideIndex + 1} of ${currentSlides.length}`;
+          questionCounter.style.display = 'block';
+        }
+        
+        questionImage.src = URL.createObjectURL(currentSlide.image);
+        questionAudio.src = URL.createObjectURL(currentSlide.audio);
+        
+        optionsContainer.innerHTML = '';
+        resultMessage.classList.add('hidden');
+        
+        const optionsToDisplay = currentSlide.options;
+        
+        optionsToDisplay.forEach((option, displayIdx) => {
+          const button = document.createElement('button');
+          button.className = 'option-button';
+          
+          button.style.width = '100%';
+          button.style.minHeight = '4rem';
+          button.style.textAlign = 'left';
+          button.style.display = 'block';
+          
+          const isSelected = currentSlide.selectedOption === displayIdx;
+          
+          button.innerHTML = `<div style="display: flex; align-items: center">
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #4b5563; margin-right: 10px; flex-shrink: 0">
+              ${isSelected ? '<span style="width: 12px; height: 12px; border-radius: 50%; background-color: #2563eb;"></span>' : ''}
+            </span>
+            ${option.text}
+          </div>`;
+          
+          button.disabled = currentSlide.answered;
+          
+          if (isSelected) {
+            button.classList.add(option.isCorrect ? 'option-correct' : 'option-incorrect');
+          }
+          
+          button.addEventListener('click', () => handleAnswer(displayIdx));
+          optionsContainer.appendChild(button);
+        });
+        
+        if (activeStage === 'Test' && currentSlide.selectedOption !== undefined) {
+          const deselectLink = document.createElement('a');
+          deselectLink.textContent = 'Deselect Answer';
+          deselectLink.href = '#';
+          deselectLink.style.color = '#2563eb';
+          deselectLink.style.display = 'block';
+          deselectLink.style.textAlign = 'right';
+          deselectLink.style.marginTop = '10px';
+          deselectLink.style.textDecoration = 'none';
+          
+          deselectLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            currentSlide.selectedOption = undefined;
+            currentSlide.selectedAnswer = null;
+            currentSlide.answered = false;
+            renderQuestionSlide();
+          });
+          
+          optionsContainer.appendChild(deselectLink);
+        }
+        
+        if (activeStage === 'Training' && currentSlide.answered) {
+          const selectedOption = currentSlide.options[currentSlide.selectedOption];
+          const isCorrect = selectedOption.isCorrect;
+          
+          resultMessage.textContent = isCorrect 
+            ? 'Correct!' 
+            : 'Incorrect. The correct answer is: ' + 
+              currentSlide.options.find(o => o.isCorrect).text;
+          
+          resultMessage.className = `result-message ${isCorrect ? 'result-correct' : 'result-incorrect'}`;
+          resultMessage.classList.remove('hidden');
+        }
+      }
+      
+      // Handle answer selection
+      function handleAnswer(optionIndex) {
+        const currentSlide = currentSlides[currentSlideIndex];
+        currentSlide.answered = true;
+        currentSlide.selectedOption = optionIndex;
+        currentSlide.selectedAnswer = currentSlide.options[optionIndex];
+        
+        const isCorrect = currentSlide.options[optionIndex].isCorrect;
+        
+        userAnswers[currentSlideIndex] = { 
+          optionIndex, 
+          isCorrect,
+          questionNumber: currentSlide.questionNumber
+        };
+        
+        const optionButtons = optionsContainer.querySelectorAll('.option-button');
+        optionButtons.forEach(button => {
+          button.disabled = true;
+        });
+        
+        optionButtons[optionIndex].classList.add(isCorrect ? 'option-correct' : 'option-incorrect');
+        
+        resultMessage.textContent = isCorrect 
+          ? 'CORRECT!' 
+          : 'INCORRECT. The correct answer is: ' + 
+            currentSlide.options.find(o => o.isCorrect).text;
+        
+        resultMessage.className = `result-message ${isCorrect ? 'result-correct' : 'result-incorrect'}`;
+        resultMessage.classList.remove('hidden');
+      }
+      
+      // Render test results
+      function renderResults() {
+        const correctCount = userAnswers.filter(a => a && a.isCorrect).length;
+        const percentage = Math.round((correctCount / currentSlides.length) * 100);
+        
+        scoreNumber.textContent = `${correctCount} / ${currentSlides.length}`;
+        scorePercent.textContent = `${percentage}% Correct`;
+        
+        resultsList.innerHTML = '';
+        userAnswers.forEach((answer, idx) => {
+          if (!answer) return;
+          
+          const item = document.createElement('div');
+          item.className = `result-item ${answer.isCorrect ? 'result-item-correct' : 'result-item-incorrect'}`;
+          
+          item.innerHTML = `
+            <span class="result-question">EX Question ${answer.questionNumber}</span>
+            <span class="result-status ${answer.isCorrect ? 'result-status-correct' : 'result-status-incorrect'}">
+              ${answer.isCorrect ? 'Correct' : 'Incorrect'}
+            </span>
+          `;
+          
+          resultsList.appendChild(item);
+        });
+      }
+      
+      // Navigation functions
+      function goToNextSlide() {
+        if (testComplete) {
+          exitPresentation();
+          return;
+        }
+        
+        if (currentSlideIndex < currentSlides.length - 1) {
+          currentSlideIndex++;
+          updatePresentationUI();
+          
+          if (activeStage === 'Introductions') {
+            introductionsAudio.currentTime = 0;
+          } else {
+            questionAudio.currentTime = 0;
+          }
+        } else {
+          if (activeStage === 'Introductions') {
+            moveToNextStage(); 
+          } else if (activeStage === 'Training') {
+            moveToNextStage();
+          } else {
+            if (!testComplete) {
+              testComplete = true;
+              updatePresentationUI();
+            }
+          }
+        }
+      }
+      
+      function goToPrevSlide() {
+        if (testComplete) {
+          return;
+        }
+        
+        if (currentSlideIndex > 0) {
+          currentSlideIndex--;
+          updatePresentationUI();
+          
+          if (activeStage === 'Introductions') {
+            introductionsAudio.currentTime = 0;
+          } else {
+            questionAudio.currentTime = 0;
+          }
+        }
+      }
+      
+      function exitPresentation() {
+        presentationMode = false;
+        presentationContainer.classList.add('hidden');
+        mainContainer.classList.remove('hidden');
+      }
+      
+      function moveToNextStage() {
+        let nextStage;
+        if (activeStage === 'Introductions') {
+          nextStage = 'Training';
+        } else if (activeStage === 'Training') {
+          nextStage = 'Test';
+        } else {
+          nextStage = 'Introductions';
+        }
+        
+        activeStage = nextStage;
+        presentationStage.textContent = `${activeStage} Stage:`;
+        
+        const hasImages = files[nextStage].images.length > 0;
+        const hasAudio = files[nextStage].audio.length > 0;
+        
+        if (hasImages && hasAudio) {
+          if (nextStage === 'Introductions') {
+            currentSlides = getMatchedFiles('Introductions');
+          } else {
+            currentSlides = prepareSlides(nextStage);
+          }
+          
+          currentSlideIndex = 0;
+          userAnswers = [];
+          testComplete = false;
+          
+          updatePresentationUI();
+        } else {
+          const alertMessage = `No files found for ${nextStage} stage. Please exit and upload files for this stage.`;
+          alert(alertMessage);
+          
+          if (activeStage === 'Training') {
+            activeStage = 'Introductions';
+          } else if (activeStage === 'Test') {
+            activeStage = 'Training';
+          }
+          presentationStage.textContent = `${activeStage} Stage:`;
+        }
+      }
+      
+      function restartStage() {
+        if (confirm('This will restart the entire training session. Continue?')) {
+          activeStage = 'Introductions';
+          currentSlideIndex = 0;
+          userAnswers = [];
+          testComplete = false;
+          
+          if (files['Introductions'].images.length > 0 && files['Introductions'].audio.length > 0) {
+            currentSlides = getMatchedFiles('Introductions');
+            updatePresentationUI();
+            
+            if (introductionsAudio) {
+              introductionsAudio.currentTime = 0;
+            }
+          } else {
+            alert('Error: No files available for Introductions stage.');
+          }
+        }
+      }
+      
+      // Update presentation UI
+      function updatePresentationUI() {
+        presentationStage.textContent = `${activeStage} Stage:`;
+        slideCounter.textContent = `Slide ${currentSlideIndex + 1} of ${currentSlides.length}`;
+        
+        introductionsSlide.classList.add('hidden');
+        questionSlide.classList.add('hidden');
+        testResults.classList.add('hidden');
+        questionMedia.classList.add('hidden');
+        
+        if (testComplete && activeStage === 'Test') {
+          renderResults();
+          testResults.classList.remove('hidden');
+        } else if (activeStage === 'Introductions') {
+          renderIntroductionsSlide();
+        } else if (activeStage === 'Training') {
+          renderQuestionSlide();
+          questionSlide.classList.remove('hidden');
+          questionMedia.classList.remove('hidden');
+        } else if (activeStage === 'Test') {
+          renderQuestionSlide();
+          questionSlide.classList.remove('hidden');
+          questionMedia.classList.remove('hidden');
+        }
+        
+        btnPrev.disabled = (currentSlideIndex === 0) || testComplete;
+        
+        if (testComplete) {
+          btnNext.textContent = 'Finish';
+        } else if (currentSlideIndex >= currentSlides.length - 1) {
+          if (activeStage === 'Introductions') {
+            btnNext.textContent = 'Next Stage (Training)';
+          } else if (activeStage === 'Training') {
+            btnNext.textContent = 'Next Stage (Test)';
+          } else {
+            btnNext.textContent = 'Show Results';
+          }
+        } else {
+          btnNext.textContent = 'Next';
+        }
+        
+        if (currentSlideIndex >= currentSlides.length - 1 && !testComplete) {
+          presentationContainer.classList.add('stage-complete');
+        } else if (!testComplete) {
+          presentationContainer.classList.remove('stage-complete');
+        }
+      }
+      
+      // Start presentation mode
+      function startPresentation() {
+        let slides;
+        
+        if (activeStage === 'Introductions') {
+          slides = getMatchedFiles('Introductions');
+        } else {
+          slides = prepareSlides(activeStage);
+        }
+        
+        if (slides.length > 0) {
+          currentSlides = slides;
+          currentSlideIndex = 0;
+          presentationMode = true;
+          userAnswers = [];
+          testComplete = false;
+          presentationContainer.classList.remove('stage-complete');
+          
+          updatePresentationUI();
+          mainContainer.classList.add('hidden');
+          presentationContainer.classList.remove('hidden');
+        } else {
+          alert('No matched files found.');
+        }
+      }
+      
+      // Event listeners
+      stageTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          setActiveStage(tab.getAttribute('data-stage'));
+        });
+      });
+      
+      btnStart.addEventListener('click', startPresentation);
+      btnPrev.addEventListener('click', goToPrevSlide);
+      btnNext.addEventListener('click', goToNextSlide);
+      btnExit.addEventListener('click', exitPresentation);
+      document.getElementById('btnRestart').addEventListener('click', restartStage);
+      
+      // Initialize by loading files
+      loadFilesFromGitHub();
+    });
+  </script>
+</body>
+</html>

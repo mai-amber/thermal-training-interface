@@ -885,60 +885,60 @@
     document.addEventListener('DOMContentLoaded', function() {
       // IMPORTANT: Update this base URL to match your GitHub repository
       // Format: https://raw.githubusercontent.com/[username]/[repository]/[branch]/
-      const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPOSITORY/main/';
+      const GITHUB_BASE_URL = 'https://raw.githubusercontent.com/mai-amber/thermal-training-interface/main/';
       
       // Define the file manifest
       const FILE_MANIFEST = {
         'Introductions': {
-          images: [
-            '1 - Explanations/blue crossed line 1.jpg',
-            '1 - Explanations/green crossed line 2.jpg',
-            '1 - Explanations/blue square 3.jpg',
-            '1 - Explanations/green square 4.jpg',
-            '1 - Explanations/ice tray 5.jpg',
-            '1 - Explanations/kettle 6.jpg',
-            '1 - Explanations/beer bottles 7.jpg',
-            '1 - Explanations/cups hot liquid 8.jpg',
-            '1 - Explanations/refrigerator oven microwave 9.jpg'
-          ],
-          audio: [
-            '1 - Explanations/blue crossed line 1.wav',
-            '1 - Explanations/green crossed line 2.wav',
-            '1 - Explanations/blue square 3.wav',
-            '1 - Explanations/green square 4.wav',
-            '1 - Explanations/ice tray 5.wav',
-            '1 - Explanations/kettle 6.wav',
-            '1 - Explanations/beer bottles 7.wav',
-            '1 - Explanations/cups hot liquid 8.wav',
-            '1 - Explanations/refrigerator oven microwave 9.wav'
-          ]
-        },
+  images: [
+    '1 - Explanations/0 - White Crossed Line visual Hot.jpg',
+    '1 - Explanations/1 - White Crossed Line visual Cold.jpg',
+    '1 - Explanations/1.5 - White Square Visual Hot.jpg',
+    '1 - Explanations/2 - White Square Visual Cold.jpg',
+    '1 - Explanations/3 - Very Cold Ice Tray Visual.jpg',
+    '1 - Explanations/4 - Very Hot kettel Visual.jpg',
+    '1 - Explanations/5 - Three Cold Beer Bottles Visual.jpg',
+    '1 - Explanations/6 - Two Cups of Hot Liquid Visual.jpg',
+    '1 - Explanations/7 - Refrigerator, Oven and Microwave Visual.jpeg'
+  ],
+  audio: [
+    '1 - Explanations/0 - White Crossed Line Sound (Hot).wav',
+    '1 - Explanations/1 - White Crossed Line Sound (Cold).wav',
+    '1 - Explanations/1.5 - White Square Sound (Hot).wav',
+    '1 - Explanations/2 - White Square Sound (Cold).wav',
+    '1 - Explanations/3 - Very Cold Ice Tray Sound.wav',
+    '1 - Explanations/4 - Very Hot kettel Sound.wav',
+    '1 - Explanations/5 - Three Cold Beer Bottles Sound.wav',
+    '1 - Explanations/6 - Two Cups of Hot Liquid Sound.wav',
+    '1 - Explanations/7 - Refrigerator, Oven and Microwave Sound.wav'
+  ]
+},
         'Training': {
-          images: [
-            '2 - Training/stove 1.jpg',
-            '2 - Training/stove 2.jpg',
-            '2 - Training/tablet 3.jpg',
-            '2 - Training/charger 4.jpg',
-            '2 - Training/cup 5.jpg',
-            '2 - Training/dark 6.jpg',
-            '2 - Training/cold sink 7.jpg',
-            '2 - Training/pipe 8.jpg',
-            '2 - Training/hot sink 9.jpg',
-            '2 - Training/window 10.jpg'
-          ],
-          audio: [
-            '2 - Training/stove 1.wav',
-            '2 - Training/stove 2.wav',
-            '2 - Training/tablet 3.wav',
-            '2 - Training/charger 4.wav',
-            '2 - Training/cup 5.wav',
-            '2 - Training/dark 6.wav',
-            '2 - Training/cold sink 7.wav',
-            '2 - Training/pipe 8.wav',
-            '2 - Training/hot sink 9.wav',
-            '2 - Training/window 10.wav'
-          ]
-        },
+  images: [
+    '2 - Training/1 - The bottom left burner is on (Visual).jpg',
+    '2 - Training/2 - The burner on the bottom left and the middle are hot (Visual).jpg',
+    '2 - Training/3 - The phone on the right is on (Visual).jpg',
+    '2 - Training/4 - The right charger is hot (Visual).jpg',
+    '2 - Training/5 - The cup and spoon are hot (Visual).jpg',
+    '2 - Training/6 - There is an air conditioner in the dark room emitting cold air (Visual).jpg',
+    '2 - Training/7 - The water in the faucet is cold (Visual).jpg',
+    '2 - Training/8 - The piping under this sink is hot (Visual).jpg',
+    '2 - Training/9 - The water in the faucet is hot (Visual).jpg',
+    '2 - Training/10 - The weather outside the window is cold (Visual).jpg'
+  ],
+  audio: [
+    '2 - Training/1 - The bottom left burner is on (Sound).wav',
+    '2 - Training/2 - The burner on the bottom left and the middle are hot (Sound).wav',
+    '2 - Training/3 - The phone on the right is on (Sound).wav',
+    '2 - Training/4 - The right charger is hot (Sound).wav',
+    '2 - Training/5 - The cup and spoon are hot (Sound).wav',
+    '2 - Training/6 - There is an air conditioner in the dark room emitting cold air (Sound).wav',
+    '2 - Training/7 - The water in the faucet is cold (Sound).wav',
+    '2 - Training/8 - The piping under this sink is hot (Sound).wav',
+    '2 - Training/9 - The water in the faucet is hot (Sound).wav',
+    '2 - Training/10 - The weather outside the window is cold (Sound).wav'
+  ]
+},
         'Test': {
           images: [
             '3 - Final Test/bag 1.jpg',
